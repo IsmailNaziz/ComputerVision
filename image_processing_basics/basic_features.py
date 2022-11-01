@@ -16,7 +16,7 @@ def manage_inputs(func):
             image_list = args[0]
             for image in image_list:
                 img_args = (image, *args[1:])
-                if kwargs['display_original_image']:
+                if 'display_original_image' in kwargs.keys() and kwargs['display_original_image']:
                     show_image(image.img, title=image.title)
                 func(*img_args, **kwargs)
 
@@ -59,12 +59,24 @@ def flip_images(image, how='ud', **kwargs):
     show_image(flipped_image, title=flip_dic[how]['title'], cmap='gray')
 
 
+@manage_inputs
+def get_histogram(image, **kwargs):
+    # ravel is used to flatten the vector as the image is a matrix
+    pixel_distribution = {'red_pixels': image.img[:, :, 0].ravel(),
+                          'green_pixels': image.img[:, :, 1].ravel(),
+                          'blue_pixels': image.img[:, :, 2].ravel()}
+    for pixel_name, distribution in pixel_distribution.items():
+        plt.figure()
+        plt.hist(distribution, bins=256)
+        plt.title(f'distribution of {" ".join(pixel_name.split("_"))} for the image {image.title}')
+
 def main():
     coffee_image = Image(data.coffee(), 'Coffee')
     rocket_image = Image(data.rocket(), 'Rocket')
     images = [coffee_image, rocket_image]
     # transform_colors(images)
     # flip_images(images, how='ud', display_original_image=False)
+    get_histogram(images)
 
 
 if __name__ == '__main__':
